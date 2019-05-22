@@ -33,7 +33,6 @@ class TRish(Optimizer):
             new_p = K.switch(
                 K.less(g_norm, 1 / gamma_1),
                 p - gamma_1 * alpha * g,
-                # p - alpha * g / g_norm
                 K.switch(
                     K.less_equal(g_norm, 1 / gamma_2),
                     p - alpha * g / g_norm,
