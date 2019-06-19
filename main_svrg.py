@@ -5,7 +5,7 @@ import argparse
 import matplotlib.pyplot as plt
 
 from cifar10 import Cifar10
-from training import train
+from importance_sampling.training import SVRG
 
 
 def parse_arguments():
@@ -25,7 +25,9 @@ def parse_arguments():
 
 
 def main(batch_size, epochs, learning_rate, plot):
-    (x_train, y_train), (x_test, y_test) = Cifar10.load_data()
+    (x_train, y_train), (x_test, y_test) = Cifar10.load_data(
+        y_test_to_categorical=True
+    )
     model = Cifar10.load_model()
     optimizer = keras.optimizers.SGD(
         lr=learning_rate,
@@ -37,13 +39,22 @@ def main(batch_size, epochs, learning_rate, plot):
                   optimizer=optimizer,
                   metrics=['accuracy'])
 
-    history = train(
-        model=model,
-        train_set=(x_train, y_train),
-        test_set=(x_test, y_test),
+    svrg_model = SVRG(model, B=0, B_over_b=len(x_train) // batch_size)
+
+    history = {'training': {}, 'test': {}}
+    training_history = svrg_model.fit(
+        x_train,
+        y_train,
         batch_size=batch_size,
-        epochs=epochs
+        epochs=epochs,
+        validation_data=(x_test, y_test)
     )
+    history['training']['accuracy'] = [
+        float(i) for i in training_history.history['accuracy']
+    ]
+    history['test']['accuracy'] = [
+        float(i) for i in training_history.history['val_accuracy']
+    ]
 
     # summarize history for accuracy
     if plot:

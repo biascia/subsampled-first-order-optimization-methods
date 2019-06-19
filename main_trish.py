@@ -1,3 +1,4 @@
+import json
 import argparse
 
 import matplotlib.pyplot as plt
@@ -15,12 +16,14 @@ def parse_arguments():
                         help='number of epochs')
     parser.add_argument('--alpha', '-a', default=0.1,
                         type=float, help='alpha')
-    parser.add_argument('--gamma-1', '-g1', default=1.05,
+    parser.add_argument('--gamma-1', '-g1', default=1,
                         type=float, help='gamma 1')
-    parser.add_argument('--gamma-2', '-g2', default=0.01,
+    parser.add_argument('--gamma-2', '-g2', default=0.001,
                         type=float, help='gamma 2')
     parser.add_argument('--plot', '-p', action='store_true',
                         help='use this flag to plot the training history')
+    parser.add_argument('--save', '-s', default=None,
+                        help='Specify a path to save training history as a JSON file')
     args = parser.parse_args()
     return args
 
@@ -66,3 +69,39 @@ if __name__ == '__main__':
         gamma_2=args.gamma_2,
         plot=args.plot
     )
+    if args.save:
+        with open(args.save, 'w') as fobj:
+            json.dump(history, fobj)
+    """
+    alphas = [0.01, 0.1, 1]
+    gamma_1s = [0.2, 1, 5]
+    gamma_2s = [0.001, 0.01, 0.1]
+    batches = [32, 64, 128]
+    epochs = 25
+
+    results = []
+    for batch in batches:
+        for alpha in alphas:
+            for gamma_1 in gamma_1s:
+                for gamma_2 in gamma_2s:
+                    history = main(
+                        batch_size=batch,
+                        epochs=epochs,
+                        alpha=alpha,
+                        gamma_1=gamma_1,
+                        gamma_2=gamma_2,
+                        plot=False
+                    )
+                    result = {
+                        'params': {
+                            'batch': batch,
+                            'alpha': alpha,
+                            'gamma_1': gamma_1,
+                            'gamma_2': gamma_2
+                        },
+                        'history': history
+                    }
+                    results.append(result)
+    import json
+    json.dump(results, open('results/trish.json', 'w'))
+    """
